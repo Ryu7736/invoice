@@ -1,0 +1,9 @@
+# Python 仮想環境
+.invoice_venv/
+
+# キャッシュや一時ファイル
+__pycache__/
+*.pyc
+
+# 環境情報
+.python-version
