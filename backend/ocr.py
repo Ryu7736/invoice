@@ -1,7 +1,8 @@
-from flask import jsonify 
-from backend import app
+from flask import Blueprint,jsonify
 
-@app.route("/ocr", methods = ["POST"])
+ocr_bp = Blueprint("ocr",__name__)
+
+@ocr_bp.route("/ocr", methods = ["POST"])
 def ocr():
     print("def")
     return jsonify({"ocrResult":"ocr関数通過！"})
