@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, request
+from backend import ocr
 
 main_bp = Blueprint("main",__name__)
 
@@ -10,4 +11,9 @@ def index():
 
 @main_bp.route("/uploads", methods = ["POST"])
 def uploads():
-    return jsonify({"message": "/uploads通過！"})
+    files = request.files.getlist("files")
+    if not files:
+        return jsonify({"error":"no files"})
+
+    ocr_results = ocr.ocr(files)
+    return jsonify({"ocr_results":ocr_results})

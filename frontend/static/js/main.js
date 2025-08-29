@@ -13,10 +13,10 @@ ocrElement.addEventListener("click", async () => {
         fd.append("files", file);
     }
 
-    const response = await fetch("/ocr", { method: "POST", body: fd })
+    const response = await fetch("/uploads", { method: "POST", body: fd })
     // if (!response.ok) {
     //     alert("!response.ok");
     // }
     const data = await response.json();
-    resultElement.innerHTML = data.ocrResult;
+    resultElement.innerHTML = JSON.stringify(data.ocr_results,null,2);
 });
