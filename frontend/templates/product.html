@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 商品管理 - 納品書OCRツール</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <style>
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .product-form {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .product-icon {
+            font-size: 2em;
+        }
+
+        .product-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .product-details {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-button, .delete-button {
+            flex: 1;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .edit-button {
+            background: #2196F3;
+            color: white;
+        }
+
+        .delete-button {
+            background: #f44336;
+            color: white;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .category-tire { background: #e3f2fd; color: #1976d2; }
+        .category-work { background: #f3e5f5; color: #7b1fa2; }
+        .category-part { background: #e8f5e8; color: #388e3c; }
+        .category-other { background: #fff3e0; color: #f57c00; }
+
+        .nav-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- ヘッダー -->
+        <div class="page-header">
+            <h1>📦 商品管理</h1>
+            <p>商品・サービス情報の登録・編集・削除を行います</p>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div style="margin-bottom: 20px;">
+            <a href="/" class="nav-link">🏠 ホーム</a>
+            <a href="/customers" class="nav-link">👥 顧客管理</a>
+            <a href="/invoices" class="nav-link">🧾 請求書生成</a>
+        </div>
+
+        <!-- 商品登録フォーム -->
+        <div class="product-form">
+            <h2>➕ 新規商品登録</h2>
+            <form id="productForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productName">商品名 *</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="basePrice">基本価格 *</label>
+                        <input type="number" id="basePrice" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">カテゴリ *</label>
+                        <select id="category" required>
+                            <option value="タイヤ">🚗 タイヤ</option>
+                            <option value="作業">🔧 作業・工賃</option>
+                            <option value="部品">⚙️ 部品・パーツ</option>
+                            <option value="その他">📦 その他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="unit">単位</label>
+                        <select id="unit">
+                            <option value="本">本</option>
+                            <option value="個">個</option>
+                            <option value="台">台</option>
+                            <option value="セット">セット</option>
+                            <option value="回">回</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit-button">💾 商品を登録</button>
+            </form>
+        </div>
+
+        <!-- 商品一覧 -->
+        <div>
+            <h2>📋 商品一覧</h2>
+            <div class="product-grid" id="productGrid">
+                <!-- 商品カードがここに表示される -->
+                <!-- サンプルデータ -->
+                <div class="product-card">
+                    <div class="category-badge category-tire">タイヤ</div>
+                    <div class="product-header">
+                        <div class="product-icon">🚗</div>
+                        <div class="product-name">ブリヂストン 195/65R15</div>
+                    </div>
+                    <div class="product-price">¥15,000</div>
+                    <div class="product-details">
+                        単位: 本<br>
+                        登録日: 2024/01/15
+                    </div>
+                    <div class="product-actions">
+                        <button class="edit-button">✏️ 編集</button>
+                        <button class="delete-button">🗑️ 削除</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="category-badge category-work">作業</div>
+                    <div class="product-header">
+                        <div class="product-icon">🔧</div>
+                        <div class="product-name">タイヤ取付作業</div>
+                    </div>
+                    <div class="product-price">¥2,000</div>
+                    <div class="product-details">
+                        単位: 本<br>
+                        登録日: 2024/01/15
+                    </div>
+                    <div class="product-actions">
+                        <button class="edit-button">✏️ 編集</button>
+                        <button class="delete-button">🗑️ 削除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 商品登録フォーム処理
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                product_name: document.getElementById('productName').value,
+                base_price: parseFloat(document.getElementById('basePrice').value),
+                category: document.getElementById('category').value,
+                unit: document.getElementById('unit').value
+            };
+            
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    alert('✅ 商品が登録されました！');
+                    document.getElementById('productForm').reset();
+                    loadProducts(); // 一覧を再読み込み
+                } else {
+                    alert('❌ 登録に失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ エラーが発生しました');
+            }
+        });
+
+        // 商品一覧を読み込み
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const products = await response.json();
+                
+                const productGrid = document.getElementById('productGrid');
+                productGrid.innerHTML = '';
+                
+                products.forEach(product => {
+                    const productCard = createProductCard(product);
+                    productGrid.appendChild(productCard);
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        // 商品カードを作成
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            
+            const categoryClass = getCategoryClass(product.category);
+            const categoryIcon = getCategoryIcon(product.category);
+            
+            card.innerHTML = `
+                <div class="category-badge ${categoryClass}">${product.category}</div>
+                <div class="product-header">
+                    <div class="product-icon">${categoryIcon}</div>
+                    <div class="product-name">${product.product_name}</div>
+                </div>
+                <div class="product-price">¥${product.base_price.toLocaleString()}</div>
+                <div class="product-details">
+                    単位: ${product.unit}<br>
+                    登録日: ${product.created_at || ''}
+                </div>
+                <div class="product-actions">
+                    <button class="edit-button" onclick="editProduct(${product.product_id})">✏️ 編集</button>
+                    <button class="delete-button" onclick="deleteProduct(${product.product_id})">🗑️ 削除</button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // カテゴリクラスを取得
+        function getCategoryClass(category) {
+            const classMap = {
+                'タイヤ': 'category-tire',
+                '作業': 'category-work',
+                '部品': 'category-part'
+            };
+            return classMap[category] || 'category-other';
+        }
+
+        // カテゴリアイコンを取得
+        function getCategoryIcon(category) {
+            const iconMap = {
+                'タイヤ': '🚗',
+                '作業': '🔧',
+                '部品': '⚙️'
+            };
+            return iconMap[category] || '📦';
+        }
+
+        // 商品編集
+        function editProduct(productId) {
+            alert(`商品ID ${productId} の編集機能は実装予定です`);
+        }
+
+        // 商品削除
+        async function deleteProduct(productId) {
+            if (confirm('この商品を削除しますか？')) {
+                try {
+                    const response = await fetch(`/api/products/${productId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        alert('✅ 商品が削除されました');
+                        loadProducts();
+                    } else {
+                        alert('❌ 削除に失敗しました');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('❌ エラーが発生しました');
+                }
+            }
+        }
+
+        // ページ読み込み時に商品一覧を取得
+        document.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
+</body>
+</html>

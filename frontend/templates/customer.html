@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👥 顧客管理 - 納品書OCRツール</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+    <style>
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .customer-form {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .customer-table {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .customer-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .customer-item {
+            display: grid;
+            grid-template-columns: 1fr 150px 120px 150px 100px;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .customer-item:hover {
+            background: #f8f9fa;
+        }
+
+        .customer-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .customer-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .billing-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .billing-month-end {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .billing-20th {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-button, .delete-button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .edit-button {
+            background: #2196F3;
+            color: white;
+        }
+
+        .delete-button {
+            background: #f44336;
+            color: white;
+        }
+
+        .nav-link {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- ヘッダー -->
+        <div class="page-header">
+            <h1>👥 顧客管理</h1>
+            <p>顧客情報の登録・編集・削除を行います</p>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div style="margin-bottom: 20px;">
+            <a href="/" class="nav-link">🏠 ホーム</a>
+            <a href="/products" class="nav-link">📦 商品管理</a>
+            <a href="/invoices" class="nav-link">🧾 請求書生成</a>
+        </div>
+
+        <!-- 顧客登録フォーム -->
+        <div class="customer-form">
+            <h2>➕ 新規顧客登録</h2>
+            <form id="customerForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="customerName">顧客名 *</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="billingCycle">締め区分 *</label>
+                        <select id="billingCycle" required>
+                            <option value="月末">月末締め</option>
+                            <option value="20日">20日締め</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">支払い方法</label>
+                        <select id="paymentMethod">
+                            <option value="現金">現金</option>
+                            <option value="銀行振込">銀行振込</option>
+                            <option value="クレジット">クレジットカード</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">電話番号</label>
+                        <input type="tel" id="phoneNumber">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address">住所</label>
+                    <input type="text" id="address">
+                </div>
+                <button type="submit" class="submit-button">💾 顧客を登録</button>
+            </form>
+        </div>
+
+        <!-- 顧客一覧 -->
+        <div class="customer-table">
+            <div class="table-header">
+                <h2>📋 顧客一覧</h2>
+            </div>
+            <div class="customer-list" id="customerList">
+                <!-- 顧客データがここに表示される -->
+                <div class="customer-item">
+                    <div class="customer-info">
+                        <h4>田中自動車</h4>
+                        <p>📧 東京都渋谷区1-1-1</p>
+                        <p>📞 03-1234-5678</p>
+                    </div>
+                    <div class="billing-badge billing-month-end">月末締め</div>
+                    <div>現金</div>
+                    <div style="color: #666; font-size: 0.9em;">2024/01/15 登録</div>
+                    <div class="action-buttons">
+                        <button class="edit-button">✏️ 編集</button>
+                        <button class="delete-button">🗑️ 削除</button>
+                    </div>
+                </div>
+                
+                <div class="customer-item">
+                    <div class="customer-info">
+                        <h4>佐藤モータース</h4>
+                        <p>📧 大阪市中央区2-2-2</p>
+                        <p>📞 06-9876-5432</p>
+                    </div>
+                    <div class="billing-badge billing-20th">20日締め</div>
+                    <div>銀行振込</div>
+                    <div style="color: #666; font-size: 0.9em;">2024/01/10 登録</div>
+                    <div class="action-buttons">
+                        <button class="edit-button">✏️ 編集</button>
+                        <button class="delete-button">🗑️ 削除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 顧客登録フォーム処理
+        document.getElementById('customerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                customer_name: document.getElementById('customerName').value,
+                billing_cycle: document.getElementById('billingCycle').value,
+                payment_method: document.getElementById('paymentMethod').value,
+                phone_number: document.getElementById('phoneNumber').value,
+                address: document.getElementById('address').value
+            };
+            
+            try {
+                const response = await fetch('/api/customers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    alert('✅ 顧客が登録されました！');
+                    document.getElementById('customerForm').reset();
+                    loadCustomers(); // 一覧を再読み込み
+                } else {
+                    alert('❌ 登録に失敗しました');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ エラーが発生しました');
+            }
+        });
+
+        // 顧客一覧を読み込み
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                const customers = await response.json();
+                
+                const customerList = document.getElementById('customerList');
+                customerList.innerHTML = '';
+                
+                customers.forEach(customer => {
+                    const customerItem = createCustomerItem(customer);
+                    customerList.appendChild(customerItem);
+                });
+            } catch (error) {
+                console.error('Error loading customers:', error);
+            }
+        }
+
+        // 顧客アイテムを作成
+        function createCustomerItem(customer) {
+            const item = document.createElement('div');
+            item.className = 'customer-item';
+            
+            const billingClass = customer.billing_cycle === '月末' ? 'billing-month-end' : 'billing-20th';
+            
+            item.innerHTML = `
+                <div class="customer-info">
+                    <h4>${customer.customer_name}</h4>
+                    <p>📧 ${customer.address || '住所未登録'}</p>
+                    <p>📞 ${customer.phone_number || '電話番号未登録'}</p>
+                </div>
+                <div class="billing-badge ${billingClass}">${customer.billing_cycle}締め</div>
+                <div>${customer.payment_method}</div>
+                <div style="color: #666; font-size: 0.9em;">${customer.created_at || ''}</div>
+                <div class="action-buttons">
+                    <button class="edit-button" onclick="editCustomer(${customer.customer_id})">✏️ 編集</button>
+                    <button class="delete-button" onclick="deleteCustomer(${customer.customer_id})">🗑️ 削除</button>
+                </div>
+            `;
+            
+            return item;
+        }
+
+        // 顧客編集
+        function editCustomer(customerId) {
+            // 編集機能の実装
+            alert(`顧客ID ${customerId} の編集機能は実装予定です`);
+        }
+
+        // 顧客削除
+        async function deleteCustomer(customerId) {
+            if (confirm('この顧客を削除しますか？')) {
+                try {
+                    const response = await fetch(`/api/customers/${customerId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        alert('✅ 顧客が削除されました');
+                        loadCustomers();
+                    } else {
+                        alert('❌ 削除に失敗しました');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('❌ エラーが発生しました');
+                }
+            }
+        }
+
+        // ページ読み込み時に顧客一覧を取得
+        document.addEventListener('DOMContentLoaded', loadCustomers);
+    </script>
+</body>
+</html>

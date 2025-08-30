@@ -1,0 +1,223 @@
+/* 🚛 納品書OCR用スタイル */
+.invoice-results-header {
+    background: linear-gradient(135deg, #FF7043 0%, #FF5722 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.results-stats {
+    display: flex;
+    gap: 10px;
+}
+
+.stat-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+/* 重要項目カード */
+.key-items {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.key-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.key-item-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #FF5722;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.key-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.key-icon {
+    font-size: 1.2em;
+}
+
+.key-count {
+    background: #FF5722;
+    color: white;
+    font-size: 0.8em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+.key-item-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.key-value {
+    background: #e3f2fd;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    border: 1px solid #2196F3;
+}
+
+/* テキストグリッド */
+.text-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.text-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-size: 0.9em;
+}
+
+.text-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* 📋 納品書カテゴリ別の色分け */
+.text-item.amount { background: #E8F5E8; border-color: #4CAF50; }
+.text-item.tire_size { background: #FFEBEE; border-color: #FF5722; }
+.text-item.date { background: #F3E5F5; border-color: #9C27B0; }
+.text-item.time { background: #ECEFF1; border-color: #607D8B; }
+.text-item.quantity { background: #E3F2FD; border-color: #2196F3; }
+.text-item.customer { background: #FFF3E0; border-color: #FF9800; }
+.text-item.work_content { background: #EFEBE9; border-color: #795548; }
+.text-item.shop_info { background: #E8EAF6; border-color: #3F51B5; }
+.text-item.product_code { background: #E0F2F1; border-color: #009688; }
+.text-item.phone { background: #FCE4EC; border-color: #E91E63; }
+.text-item.address { background: #F1F8E9; border-color: #8BC34A; }
+.text-item.number { background: #F9FBE7; border-color: #CDDC39; }
+.text-item.short { background: #F5F5F5; border-color: #9E9E9E; }
+.text-item.other { background: #FAFAFA; border-color: #757575; }
+
+.text-number {
+    font-size: 0.8em;
+    color: #666;
+    min-width: 15px;
+}
+
+.text-content {
+    font-weight: 500;
+}
+
+.text-category-icon {
+    font-size: 1em;
+}
+
+/* 統計セクション */
+.invoice-statistics {
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+}
+
+.category-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #ddd;
+    transition: transform 0.2s;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-item.priority-stat {
+    border-left-color: #FF5722;
+    box-shadow: 0 2px 8px rgba(255, 87, 34, 0.2);
+}
+
+.priority-badge {
+    background: #FF5722;
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: auto;
+}
+
+.stat-icon {
+    font-size: 1.2em;
+}
+
+.stat-count {
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-percentage {
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* ページセクション */
+.page-section {
+    margin-bottom: 30px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.page-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.all-texts {
+    padding: 20px;
+}
+
+.all-texts h5 {
+    margin-bottom: 15px;
+    color: #333;
+}

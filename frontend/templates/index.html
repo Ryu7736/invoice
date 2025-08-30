@@ -3,17 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>invoice_ocr</title>
+    <title>🚛 納品書OCRツール</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+    <style>
+        /* 🎨 メインページ専用スタイル */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF7043 0%, #FF5722 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 2px dashed #FF5722;
+        }
+
+        .upload-area {
+            text-align: center;
+            padding: 30px;
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #FF5722;
+            background: #fff3f0;
+        }
+
+        .upload-area.dragover {
+            border-color: #FF5722;
+            background: #fff3f0;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #FF5722;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, #FF5722 0%, #FF7043 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+        }
+
+        .process-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .process-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .process-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .status-indicator {
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .navigation-menu {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .navigation-menu {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>請求書作成アプリ</h1>
-    <h3>PDFファイルを選択</h3>
-    <input type = "file" multiple id = "InputImage" accept="application/pdf"></input>
-    <br><br>
-    <button type = "button" id = "ocr">OCR実行</button>
-    <br>
-    <h3>結果を表示</h3>
-    <p id = "result"></p>
-    <script src = "../static/js/main.js"></script>
+    <div class="main-container">
+        <!-- 🎯 ヘッダー -->
+        <div class="header">
+            <h1>🚛 納品書OCRツール</h1>
+            <p>PDF・画像から納品書データを自動抽出し、請求書を生成します</p>
+        </div>
+
+        <!-- 🧭 ナビゲーションメニュー -->
+        <div class="navigation-menu">
+            <a href="/" class="nav-button">🏠 ホーム</a>
+            <a href="/customers" class="nav-button">👥 顧客管理</a>
+            <a href="/products" class="nav-button">📦 商品管理</a>
+            <a href="/invoices" class="nav-button">🧾 請求書生成</a>
+            <a href="/logs" class="nav-button">📊 処理履歴</a>
+        </div>
+
+        <!-- 📋 メインコンテンツ -->
+        <div class="main-content">
+            <!-- 📁 ファイルアップロード部分 -->
+            <div class="upload-section">
+                <h2>📁 ファイルアップロード</h2>
+                
+                <!-- ドラッグ&ドロップエリア -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <h3>ファイルをここにドラッグ&ドロップ</h3>
+                    <p>または</p>
+                    <button type="button" class="upload-button" onclick="document.getElementById('InputImage').click()">
+                        📁 ファイルを選択
+                    </button>
+                    <input type="file" id="InputImage" class="file-input" multiple accept=".pdf,.png,.jpg,.jpeg">
+                </div>
+
+                <!-- ファイルプレビュー -->
+                <div class="file-preview" id="filePreview">
+                    <h4>📋 選択されたファイル:</h4>
+                    <div id="fileList"></div>
+                </div>
+
+                <!-- 処理ボタン -->
+                <button id="ocr" class="process-button" disabled>
+                    🔍 OCR処理を開始
+                </button>
+
+                <!-- ステータス表示 -->
+                <div id="clicked" class="status-indicator" style="display: none;"></div>
+            </div>
+
+            <!-- 📊 結果表示部分 -->
+            <div class="results-section">
+                <h2>📊 抽出結果</h2>
+                <div id="result">
+                    <div style="text-align: center; color: #666; padding: 50px;">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📄</div>
+                        <p>ファイルをアップロードしてOCR処理を開始してください</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🎯 使用方法 -->
+        <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <h2>📖 使用方法</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">1️⃣</div>
+                    <h3>ファイルアップロード</h3>
+                    <p>納品書のPDFまたは画像ファイルをアップロード</p>
+                </div>
+                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">2️⃣</div>
+                    <h3>OCR処理</h3>
+                    <p>AI技術で文字を自動認識・抽出</p>
+                </div>
+                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">3️⃣</div>
+                    <h3>データ確認</h3>
+                    <p>抽出されたデータを確認・修正</p>
+                </div>
+                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">4️⃣</div>
+                    <h3>請求書生成</h3>
+                    <p>Excel形式の請求書を自動生成</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // 🎯 ドラッグ&ドロップ機能
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('InputImage');
+        const filePreview = document.getElementById('filePreview');
+        const fileList = document.getElementById('fileList');
+        const ocrButton = document.getElementById('ocr');
+
+        // ドラッグ&ドロップイベント
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            fileInput.files = files;
+            updateFilePreview(files);
+        });
+
+        // ファイル選択イベント
+        fileInput.addEventListener('change', (e) => {
+            updateFilePreview(e.target.files);
+        });
+
+        // ファイルプレビュー更新
+        function updateFilePreview(files) {
+            if (files.length === 0) {
+                filePreview.style.display = 'none';
+                ocrButton.disabled = true;
+                return;
+            }
+
+            filePreview.style.display = 'block';
+            ocrButton.disabled = false;
+            
+            fileList.innerHTML = '';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileIcon = file.type.includes('pdf') ? '📄' : '🖼️';
+                const fileSize = (file.size / 1024).toFixed(1);
+                
+                fileItem.innerHTML = `
+                    <span style="font-size: 1.5em;">${fileIcon}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold;">${file.name}</div>
+                        <div style="color: #666; font-size: 0.9em;">${fileSize} KB</div>
+                    </div>
+                `;
+                
+                fileList.appendChild(fileItem);
+            }
+        }
+
+        // ステータス表示関数
+        function showStatus(message, type = 'processing') {
+            const statusElement = document.getElementById('clicked');
+            statusElement.textContent = message;
+            statusElement.className = `status-indicator status-${type}`;
+            statusElement.style.display = 'block';
+        }
+
+        // OCRボタンの元の処理を拡張
+        const originalOcrHandler = ocrElement.onclick;
+        ocrElement.onclick = async function() {
+            showStatus('処理中...', 'processing');
+            await originalOcrHandler.call(this);
+        };
+    </script>
 </body>
 </html>
