@@ -1,6 +1,6 @@
 # Python 仮想環境
 .invoice_venv/
-.invoice_venv2/
+.invoice_venv_easyocr/
 
 # キャッシュや一時ファイル
 __pycache__/
