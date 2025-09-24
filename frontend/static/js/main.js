@@ -1,6 +1,7 @@
 const InputImageElement = document.querySelector("#InputImage");
 const ocrElement = document.querySelector("#ocr");
 const resultElement = document.querySelector("#result");
+const clickedElement = document.querySelector("#clicked");
 
 ocrElement.addEventListener("click", async () => {
     if(InputImageElement.files.length === 0) {
@@ -13,10 +14,10 @@ ocrElement.addEventListener("click", async () => {
         fd.append("files", file);
     }
 
-    const response = await fetch("/ocr", { method: "POST", body: fd })
+    const response = await fetch("/uploads", { method: "POST", body: fd })
     // if (!response.ok) {
     //     alert("!response.ok");
     // }
     const data = await response.json();
-    resultElement.innerHTML = data.ocrResult;
+    resultElement.innerHTML = JSON.stringify(data.ocr_results,null,2);
 });
