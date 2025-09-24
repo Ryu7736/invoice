@@ -11,12 +11,12 @@ ocr_model = easyocr.Reader(["ja","en"])
 def ocr(files):
     results = []
     for f in files:
-        if not f:
-            print(f"空ファイルをスキップしました。")
+        if not f.filename:
+            results.append("空ファイルをスキップしました。")
             continue
         pdf_bytes = f.read()
         if not pdf_bytes:
-            print("f.read()失敗")
+            results.append("ファイルの読み取りに失敗")
             continue
 
         imgs = convert_from_bytes(pdf_bytes, dpi =200, fmt = "png")
