@@ -1,6 +1,6 @@
-const InputImageElement = document.querySelector("#InputImage");
-const ocrElement = document.querySelector("#ocr");
-const resultElement = document.querySelector("#result");
+const InputImageElement = document.querySelector(".InputImage");
+const ocrElement = document.querySelector(".ocr");
+const resultElement = document.querySelector(".result");
 const clickedElement = document.querySelector("#clicked");
 
 ocrElement.addEventListener("click", async () => {
